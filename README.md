@@ -1,296 +1,145 @@
 # Agentic Browser
 
-A desktop web browser with an AI assistant that runs **entirely on your computer**. The open models (Llama, Qwen, Whisper) are embedded in the app. There is no Ollama, no cloud and no API key, and your pages, questions and voice never leave the machine.
+**A web browser whose AI never leaves your computer.**
 
-**Every tab is either a browser tab or an AI tab.** A new tab's search box has a **Browser / AI** choice, and the tab continues the way you pick:
+Agentic Browser is a desktop browser with an AI assistant built in, and the AI runs entirely on
+your machine. Open models (Qwen, Llama, Whisper) are embedded in the app. There is no cloud, no
+account, no API key and no telemetry: the pages you read, the questions you ask and the words you
+speak stay on your computer.
 
-- **Browser tab:** a normal browser (tabs that restore, find, zoom, downloads, permission prompts) with an AI side panel.
-- **History, Bookmarks & Downloads:** the clock icon before Settings (or ⌘Y / ⌥⌘B / ⌥⌘L) opens them in their own tab, grouped by day and paginated, with search, rename/delete and clear.
-- **Windows:** ⌘N opens a new window, ⌘⇧N an **incognito** window (in-memory cookies and storage, no history, no saved passwords, no AI history index, an "Incognito" badge; site permissions are denied and the ad blocker is off there). Closing a window's last tab closes the window. Next launch restores the tabs of all normal windows into one window.
-- **Passwords:** after you sign in on an https site, a prompt offers to save the password (Save / Not now / Never for this site). Passwords are encrypted with the system keychain (`safeStorage`) and filled in automatically next time. **Settings → Privacy → Saved passwords** lists and deletes them; the UI never sees a password.
-- **Bookmarks:** the star in the address bar or ⌘D adds or removes one; the bookmarks bar under the toolbar (⌘⇧B shows or hides it) opens them in the current tab (⌘-click for a new tab).
-- **Ask about your history (opt-in):** in the History tab, switch it on to keep visited pages' text on this computer (newest 3,000 pages, full-text search). Answers come only from those pages and cite them. "Clear AI history index" and Clear browsing data delete it.
-  - **Summary:** summarize the page or a selection. Summary or Detailed, with an optional focus, streamed live, cached.
-  - **Chat:** ask about the page you're reading, or across several open tabs. Answers quote the page, and local embeddings find the right parts of long pages.
-  - **Agent:** give a simple task ("open a site, click X, find Y, fill this form"); a local actor picks one step at a time from the page's numbered controls and a checker verifies each step. Every step shows in a log, **Stop** ends it, it never submits forms (you press submit) and it stops on sign-in and payment pages. At most 15 steps.
-- **AI tab** (pick **AI** on a new tab, or ⌘/Ctrl+K): type or say a question; the tab shows the answer instead of a web page.
-  - **AI result:** an answer written by your local model only from the top web results, with numbered citations.
-  - **Results:** the links behind the answer.
-  - **Images, Videos, News, Maps:** open DuckDuckGo's (or OpenStreetMap's) page for the question in a new tab.
-
-**Also built in:**
-
-- **Speech to text:** the mic buttons transcribe your voice locally with Whisper.
-- **Ad and tracker blocking:** EasyList, EasyPrivacy and uBlock Origin's lists and scriptlets (including YouTube video ads), bundled with the app.
-
-Built with Electron (`WebContentsView` tabs), React, TypeScript, **llama.cpp via `node-llama-cpp`** and **whisper.cpp via `@fugood/whisper.node`**. Both run in Electron utility processes.
-
-What isn't built yet is listed in **[FUTURE.md](FUTURE.md)**. The design trade-offs are in **[DECISIONS.md](DECISIONS.md)**.
+It is a normal browser first (tabs, bookmarks, history, downloads, incognito, saved passwords) with
+an assistant that can read, compare, answer and do small tasks for you.
 
 ---
 
-## Quick start
+## What you can do
+
+### Read faster
+
+- **Summarize any page** or a selection: a short summary or a detailed one, optionally focused on
+  what you care about ("prices and dates"). PDFs work too.
+- **Chat with a page**: answers quote the page and say so when the page doesn't contain the answer.
+
+### Ask across tabs
+
+- **Chat with several tabs at once**: pick "All open tabs" or choose a few. Answers cite each tab
+  as [1], [2]… and a click on a citation jumps to that tab.
+- **Compare with AI**: right-click a tab and compare it with another tab or all of them. You get a
+  verdict, a comparison table and the main differences.
+
+### Ask the web, with sources
+
+- **AI tabs**: ask a question instead of typing an address. The browser searches the web, reads the
+  top results and writes an answer **only from those sources**, with numbered citations.
+- Three styles: **Quick answer**, **Detailed**, **Compare** (with a table).
+- **Follow-up questions** reuse the same sources. If they don't cover it, one click searches again.
+
+### Let it do small tasks
+
+- **Local agent**: "open this site, find the contact page and tell me the email", "fill this form
+  with my details". An _actor_ picks one step at a time and a _checker_ verifies each step.
+- Every step is shown live; **Stop**, **Resume** or **Delete** at any time.
+- Safe by design: it never presses a submit button (you do), and it stops on sign-in and payment
+  pages.
+
+### Remember what you read
+
+- **Ask about your history** (opt-in): "that article about solar panels last week". The text of
+  pages you visit is kept on your computer and answers link back to them.
+- **Bookmarks**, a bookmarks bar, and a History / Bookmarks / Downloads page with search and paging.
+
+### Talk instead of type
+
+- **Voice input** everywhere there is a text box (search, chat, agent), transcribed locally with
+  Whisper.
+
+### Browse privately
+
+- **Ad and tracker blocking** built in (EasyList, EasyPrivacy, uBlock Origin lists).
+- **Incognito windows**: nothing is saved to history or disk, cookies vanish when the window closes.
+- **Password manager**: passwords are encrypted with your system keychain and filled in for you.
+- **Site permissions** (camera, microphone, location, notifications) are asked once per site.
+
+---
+
+## Why local?
+
+|                                        | Agentic Browser                            | Cloud AI browsers         |
+| -------------------------------------- | ------------------------------------------ | ------------------------- |
+| Where the AI runs                      | On your computer                           | On someone else's servers |
+| What leaves your machine               | Only normal web traffic                    | Pages, questions, voice   |
+| Works offline (summaries, chat, voice) | Yes                                        | No                        |
+| Account / API key / subscription       | None                                       | Usually                   |
+| Answers grounded in sources            | Always cited; says "the sources don't say" | Varies                    |
+
+The trade-off is speed and size: local models are smaller than cloud models, so the app keeps tasks
+focused (summaries, grounded answers, simple agent steps) where small models do well.
+
+---
+
+## Install
+
+Download the latest build from **[Releases](../../releases)**:
+
+| Platform              | File                  |
+| --------------------- | --------------------- |
+| macOS (Apple Silicon) | `.dmg`                |
+| Windows               | `.exe` installer      |
+| Linux                 | `.AppImage` or `.deb` |
+
+The builds are **not code-signed** yet:
+
+- **macOS:** right-click the app → **Open** the first time (or run
+  `xattr -dr com.apple.quarantine "/Applications/Agentic Browser.app"`).
+- **Windows:** SmartScreen may warn; choose **More info → Run anyway**.
+
+On first launch the app checks your hardware and suggests models to download (one-time, from
+Hugging Face). After that, the AI works offline.
+
+**Hardware:** 8 GB RAM works (smaller model); 16 GB RAM or a GPU with 8 GB+ VRAM is recommended.
+Apple Silicon (Metal), NVIDIA (CUDA), Vulkan and plain CPU are supported.
+
+---
+
+## How it works
+
+```
+Electron browser shell
+├─ Web pages ........ sandboxed tabs, ad blocking, permissions, incognito sessions
+├─ UI (React) ....... tabs, AI tabs, side panel (Summary · Chat · Agent), settings
+└─ Main process
+   ├─ llama.cpp ..... local LLM in a separate process (summaries, chat, answers, agent)
+   ├─ Whisper ....... local speech to text
+   ├─ SQLite ........ history, bookmarks, caches, encrypted passwords, local history search
+   └─ Search ........ DuckDuckGo results, read and cited by the local model
+```
+
+Every AI answer is built from text the app actually read (a page, your tabs, search results or
+your history) and the model is instructed to use nothing else and to cite it.
+
+---
+
+## Build from source
+
+Requires Node.js 22+.
 
 ```bash
 npm install
-npm run dev            # development with hot reload
+npm run dev              # run in development
+npm run package:mac      # or package:win / package:linux → installers in dist/
 ```
 
-Requirements: Node.js ≥ 22.12 (tested with 24), macOS 12+, Windows 10+ or a modern Linux.
+Every push to `main` builds macOS, Windows and Linux installers and publishes them as a GitHub
+Release (see `.github/workflows/release.yml`).
 
-> **If your npm config has `ignore-scripts=true`**, run these once after `npm install`:
->
-> ```bash
-> node node_modules/electron/install.js        # downloads the Electron binary
-> npx electron-builder install-app-deps        # native deps for Electron (no-op for N-API prebuilds)
-> ```
->
-> `better-sqlite3`, `node-llama-cpp` and `@fugood/whisper.node` ship prebuilt N-API binaries, so no compiler is needed.
+---
 
-### Run without any model (mock)
+## Status
 
-```bash
-AB_LLM_PROVIDER=mock npm run dev
-```
+Agentic Browser is an early release (0.x). Known open items: some Cloudflare "verify you are
+human" checks loop, the agent only handles simple tasks, and builds aren't code-signed.
 
-The `MockProvider` produces deterministic text from the page, which is useful for UI work. Speech to text still needs a Whisper model. This environment variable is the only way to use the mock (it is ignored in packaged builds, and there is no Settings switch).
+## License
 
-### First run
-
-1. **Hardware check:** RAM, CPU and GPU backend (Metal, CUDA, Vulkan or CPU), with recommended models.
-2. **Licenses:** the Llama Community License must be accepted before downloading a Llama model.
-3. **Download:** progress, speed and ETA, pause/resume/cancel, a disk-space check, and SHA-256 verification.
-4. **Ready**, then a 3-step tour.
-
-You can skip setup, import any local `.gguf`, or keep browsing while downloads finish.
-
-## Models
-
-Settings and onboarding only offer models **this computer can run**. A model whose memory requirement exceeds your RAM (or VRAM on a discrete GPU) is hidden, with a note saying how many were hidden.
-
-| Role                    | Catalog models                                           | Size               | Recommended when                   |
-| ----------------------- | -------------------------------------------------------- | ------------------ | ---------------------------------- |
-| Summaries, chat, search | **Qwen3 8B** (Q4_K_M) · Llama 3.2 3B · Llama 3.1 8B      | 4.7 / 1.9 / 4.6 GB | Qwen3 8B with ≥ 16 GB RAM, else 3B |
-| Speech to text          | **Whisper large-v3 turbo** (Q5_0) · Whisper small (Q5_1) | 547 / 181 MB       | turbo with ≥ 7 GB RAM              |
-| Embeddings (retrieval)  | nomic-embed-text v1.5 (Q8_0)                             | 139 MB             | always                             |
-
-- Downloaded from Hugging Face on request, and **never bundled** in the installer.
-- Stored in `<userData>/models`:
-  - macOS: `~/Library/Application Support/Agentic Browser/models`
-  - Windows: `%APPDATA%\Agentic Browser\models`
-  - Linux: `~/.config/Agentic Browser/models`
-- Interrupted downloads resume using HTTP Range requests. Every file is checked against the SHA-256 that Hugging Face publishes, and a mismatch deletes it.
-- **Settings → Models** lets you assign a model to each role, import any `.gguf` (referenced in place, not copied), delete models, and open the folder. An imported model gets one role: embeddings if its file name contains "embed", otherwise summaries, chat and search.
-
-### Hardware guidance
-
-- **Minimum:** 8 GB RAM, for the 3B model and Whisper small.
-- **Recommended:** 16 GB RAM or a GPU with ≥ 8 GB VRAM, for Qwen3 8B and Whisper turbo.
-- **Context window:** 8,192 tokens by default (Settings → Performance). The worker shrinks it to what memory allows (minimum 2,048), and GPU layers are sized for the configured context.
-- **Idle unload:** models unload after 10 idle minutes by default; Whisper unloads after 5. The next use shows "Model loading…". Only one large generation model is loaded at a time.
-
-### GPU backends
-
-| Platform                           | Backend    | Notes                                             |
-| ---------------------------------- | ---------- | ------------------------------------------------- |
-| macOS Apple Silicon                | **Metal**  | Prebuilt. Unified memory, so most layers offload. |
-| Windows / Linux + NVIDIA           | **CUDA**   | Prebuilt for CUDA 12. Needs a recent driver.      |
-| Windows / Linux + AMD/Intel/NVIDIA | **Vulkan** | Prebuilt. Needs Vulkan drivers.                   |
-| Anything else                      | **CPU**    | Always works; slower.                             |
-
-- If loading on the GPU fails, the model reloads on CPU automatically, and the footer shows **CPU (GPU fallback)**.
-- **Settings → Performance → GPU acceleration: Off** forces CPU.
-- Only the prebuilt llama.cpp binaries shipped with the app are used. llama.cpp is never downloaded or compiled at runtime.
-- The panel footer shows the active model, backend, layers, context, RAM/VRAM use and tokens/sec.
-
-## Usage
-
-| Action                   | macOS                  | Windows / Linux                    |
-| ------------------------ | ---------------------- | ---------------------------------- |
-| New AI tab               | ⌘K                     | Ctrl+K                             |
-| Tabs 1–8 / last tab      | ⌘1…⌘8 / ⌘9             | Ctrl+1…8 / Ctrl+9                  |
-| Next / previous tab      | Ctrl+Tab, ⌥⌘→/←, ⇧⌘]/[ | Ctrl+Tab, Ctrl+PgDn/PgUp           |
-| New tab / close tab      | ⌘T, ⌘W                 | Ctrl+T, Ctrl+W                     |
-| Reopen closed tab        | ⇧⌘T                    | Ctrl+Shift+T                       |
-| Focus address bar        | ⌘L                     | Ctrl+L                             |
-| Reload / hard reload     | ⌘R, ⇧⌘R                | Ctrl+R, F5 / Ctrl+Shift+R, Ctrl+F5 |
-| Back / forward           | ⌘[ and ⌘]              | Ctrl+[ and ], Alt+←/→              |
-| Find / next / previous   | ⌘F, ⌘G, ⇧⌘G            | Ctrl+F, F3, Shift+F3               |
-| Zoom in / out / reset    | ⌘+, ⌘−, ⌘0             | Ctrl+Plus, Ctrl+−, Ctrl+0          |
-| Print                    | ⌘P                     | Ctrl+P                             |
-| View page source         | ⌥⌘U                    | Ctrl+U                             |
-| Downloads                | ⌥⌘L                    | Ctrl+J                             |
-| Toggle AI panel          | ⇧⌘A                    | Ctrl+Shift+A                       |
-| Summary / Chat / History | ⇧⌘S / ⇧⌘C / ⌘Y         | Ctrl+Shift+S / C / Ctrl+H          |
-| Settings                 | ⌘,                     | Ctrl+,                             |
-
-On macOS, ⌥←/→ moves by word in text fields, as in other Mac apps; it doesn't go back or forward.
-
-### Browser features
-
-- **Tabs:** the strip scrolls when there are many tabs and keeps the active one in view. Right-click a tab for New Tab, Reload, Duplicate, Mute Site, Close, Close Other Tabs, Close Tabs to the Right and Reopen Closed Tab. A speaker icon on a tab playing sound mutes it.
-- **Quitting and restoring:** closing the last tab quits the app. After a normal quit (⌘Q), your tabs reopen on the next launch and load when you first select them. Closing the last tab starts the next launch with one new tab.
-- **Address bar:** suggestions from your history as you type, with inline completion. Plain `http://` pages show "Not secure".
-- **Find, zoom, print, view source:** from the menu or the shortcuts above. The zoom level shows in the address bar.
-- **Error and crash pages:** a page that fails to load or crashes shows an error page; Reload loads the real address again.
-- **Prompts in a strip above the page** (never a modal dialog):
-  - Sites ask before using your location, notifications, camera or microphone. Your answer is remembered per site; **Settings → Privacy → Site permissions** lists and resets them.
-  - `mailto:` and other external links ask before opening another app.
-  - Sites that need HTTP sign-in show a username and password prompt.
-- **Downloads** (⌥⌘L / Ctrl+J): progress, Open and Show in Folder.
-
-### Browser tabs
-
-- **Summarize:**
-  - Pick a style from the dropdown: **Summary** (TL;DR, key points, facts, why it matters) or **Detailed** (every section).
-  - Optionally type what to **Focus on…** (for example "prices and dates"); it works with either style. Leave it empty for a general summary.
-  - Then press **Summarize page**.
-  - Output sections: TL;DR, key points, notable facts & numbers, and why it matters.
-  - Results are cached by `(url, content hash, style + focus, model)` and marked **cached**.
-  - The result header has **Regenerate**, **Copy** and **Export (Markdown)**. **Stop** cancels.
-- **Summarize a selection:** select text, right-click, and choose _Summarize selection_ or _Ask AI about selection_. Regenerate re-summarizes the same selection.
-- **Long pages** are chunked by headings and paragraphs (about 2.5k tokens, with overlap) and summarized map-reduce. PDFs are read through PDF.js.
-- **Chat:**
-  - Answers come from the page, with short quotes, and say so when the page doesn't contain the answer.
-  - History is kept per tab. Long conversations are trimmed so the page always fits.
-  - Click the **mic** to dictate a question.
-  - **Compare with AI** (right-click a tab): compare it with all open tabs or one other tab; the comparison (verdict, table, differences) appears in that tab's Chat.
-  - **Use: This tab / All open tabs / Pick tabs** (above the conversation). With several tabs, each tab's most relevant passages get an equal share of the context (up to 8 tabs; fewer if the context is small), the answer cites them as [1], [2]… and lists the tabs read, and clicking a citation switches to that tab. Tabs restored but not yet loaded are loaded in the background first. If the tabs don't answer the question, it says "The tabs don't say."
-- **Language:** answers follow the page or question language, unless you set one in Settings.
-
-### AI tabs
-
-1. On a new tab, pick **AI** under the search box (⌘/Ctrl+K opens a new tab with AI picked), then type a question and press **Enter**, or click the **mic** and speak. Example questions show below the box. The choice is remembered for the next new tab. While you type, the box suggests pages from your history. DuckDuckGo's search suggestions are off by default, because they send what you type; switch them on in **Settings → Privacy**. An address (like `example.com`) always opens as a web page.
-2. **AI result** reads the top results and streams an answer with `[1]`-style citations.
-   - **Ask a follow-up** under the answer: it reuses the same sources and the earlier questions and answers. If the sources don't cover it, a **Search the web for this** button runs it as a new search in the tab. Follow-ups are not restored after a restart.
-   - **Style chips** (single-select) pick how it's written: **Quick answer** (6 sources), **Detailed** (10 sources: sections, steps for how-to questions, facts and numbers, where sources agree or differ) and **Compare** (8 sources, with a table). One result is shown at a time. Switching to a style already generated for this search shows it instantly; otherwise it is generated then.
-   - **Settings → Search → Default result style** (a dropdown) sets the preselected chip. New styles are added in `src/shared/searchModes.ts`.
-   - Next to the chips: **Regenerate**, tokens/sec and **Copy**.
-   - **Settings → Search → Sources to read**: Automatic (each style's own number) or 3 / 5 / 8 / 10 for every style. Changing it regenerates the shown answer.
-   - **Grounding:** the model is told to use only facts from the sources, cite every fact, and write "The sources don't say" instead of guessing. Optional sections are left out when the sources don't cover them, and the temperature is 0.2. Each source contributes its opening paragraph plus the paragraphs matching the query (up to 800 tokens). A citation to a source number that doesn't exist is shown as plain text with a note: "Some citations didn't match a source."
-   - The **Sources** list links to the pages, which open in a new tab.
-   - **Images** under the sources show the preview pictures those pages declare (`og:image`). **More images** opens DuckDuckGo Images for the question in a new tab.
-   - Source pages are downloaded once per search and shared by every style and the images. The prompt puts the sources before the style instructions, so a second style reuses the already-read sources (prefix cache) and starts faster.
-3. **Results** lists the web results. **Images**, **Videos**, **News** and **Maps** (on the right of the header) open DuckDuckGo's or OpenStreetMap's page for the question in a new browser tab.
-4. **The tab:** an AI tab is titled with its question and marked with a sparkle. You can have several, each with its own answer, and they're closed, reordered and restored like any tab. Sources, results and images always open in new browser tabs, so the answer stays where it was.
-   - The address bar shows the question. Typing a new question there replaces the answer in the same tab; typing an address turns the tab into a normal web page.
-   - ⌘/Ctrl+R runs the search again. AI tabs have no side panel.
-
-Results come from DuckDuckGo, loaded in a hidden browser view like a normal search. The answer is written by your local model.
-
-### Speech to text
-
-- Click the mic, speak, then click again.
-- The audio is resampled to 16 kHz in the app and transcribed by Whisper in its own process. The model starts loading as soon as you start talking.
-- Mic buttons are in the address bar, the Search box and Chat.
-- **Settings → Voice input language** sets the language Whisper listens for (default: auto-detect). It's separate from the summary language.
-- On first use, macOS asks for microphone access.
-
-### Ad blocking
-
-On by default. You can switch it off in **Settings → Privacy**.
-
-- Requests to ad and tracker hosts are blocked, and leftover ad slots are hidden.
-- The lists ship in `resources/filters`: EasyList, EasyPrivacy, Peter Lowe's list and uBlock Origin's lists, plus uBlock's scriptlets. The scriptlets remove ads that a site serves itself, such as YouTube video ads, which domain blocking can't catch.
-- `npm run update-filters` refreshes the lists before a release; the app never downloads them itself. YouTube changes its ad delivery often, so refresh before each release.
-
-## Architecture
-
-```
-┌──────────────────────────────── Electron main process (Node) ────────────────────────────────┐
-│  index.ts     lifecycle, window, menu/shortcuts, wiring, dev flags                             │
-│  tabs.ts      TabManager → one sandboxed WebContentsView per tab (persist:browsing session)    │
-│  extract.ts   isolated-world capture → Readability → Turndown → boilerplate strip (+ PDF.js)    │
-│  summarize.ts chunking (model tokenizer) → single pass or map-reduce; styles; caching           │
-│  retrieval.ts chunk embeddings in SQLite + cosine top-k (chat on long pages)                   │
-│  assistant.ts summary / chat / search-answer orchestration and streaming                       │
-│  search.ts + webSearch.ts   SearchProvider (DuckDuckGo in a hidden view) · source reading       │
-│  adblock.ts   Ghostery engine · EasyList, EasyPrivacy, uBlock lists + scriptlets               │
-│  speech/service.ts          speech-to-text client (talks to speech/worker.ts)                  │
-│  db.ts        better-sqlite3: settings, history, summaries, embeddings                        │
-│  ipc.ts       zod-validated, sender-checked invoke handlers                                    │
-│  llm/         provider.ts · llamacpp.ts · mock.ts · models.ts · hardware.ts                    │
-└──────┬──────────────────────────────┬──────────────────────────────┬──────────────────────────┘
-       │ typed messages               │ typed messages               │ ipcRenderer.invoke / events
-┌──────▼────────────────────┐ ┌───────▼─────────────────────┐ ┌──────▼────────────────────────────┐
-│ utilityProcess: LLM       │ │ utilityProcess: speech       │ │ preload (contextIsolation, sandbox)│
-│ llm/worker.ts             │ │ speech/worker.ts             │ │  window.api: allow-listed channels │
-│ node-llama-cpp · Metal/   │ │ whisper.cpp (@fugood) ·      │ ├────────────────────────────────────┤
-│ CUDA/Vulkan/CPU · JSON    │ │ Metal/CUDA/Vulkan · warm-up  │ │ renderer (React): tabs, address    │
-│ grammar · idle unload ·   │ │ on record · idle unload      │ │ bar, web and AI tabs, side         │
-│ reused KV sequence        │ │                              │ │ panel, dropdowns, mic, settings    │
-└───────────────────────────┘ └──────────────────────────────┘ └────────────────────────────────────┘
-        Web pages: WebContentsView × N, sandboxed, contextIsolation, no Node, ad blocking
-```
-
-- **Streaming.** The worker emits text chunks. The main process forwards them as `stream` events with a stream id, and **Stop** aborts the request in the worker.
-- **Prefix cache.** Each loaded model keeps one context sequence that is reused across requests, so a repeated system prompt isn't re-processed. Hybrid and recurrent models start from a clean sequence each time instead.
-- **Extensibility:**
-  - New Images/Videos-style links: `src/shared/verticals.ts`. New answer styles: `src/shared/searchModes.ts`.
-  - New search engines: the `SearchProvider` interface.
-  - New LLM backends: `LLMProvider`.
-
-## Security
-
-- **Sandboxing.** Web content runs in sandboxed `WebContentsView`s with `contextIsolation`, no Node, and no preload from the app.
-- **UI renderer.** It is sandboxed too. Its CSP is `script-src 'self'`, and production builds drop the dev-server `localhost` entries. Its `will-navigate` and `window.open` are denied, and `<webview>` is blocked.
-- **IPC.**
-  - A typed preload with channel allow-lists.
-  - Every payload is validated with zod, and the sender must be the app's own UI frame.
-  - Audio payloads are size-capped at 2 minutes.
-- **Permissions.** Web pages get camera, mic, location or notification access only after you allow it in the prompt strip, and the answer is stored per site. The app's own window may use the microphone, audio only, for dictation; web pages can't use the app's mic permission.
-- **Source fetches.** Search reads source pages from a separate in-memory session that never sends cookies, so your logins don't travel with them.
-- **Packaged builds.**
-  - `--screenshots` and the `AB_*` environment variables are ignored. `--self-test` stays available for checking an installed app.
-  - Electron fuses (`electron-builder.yml`): `ELECTRON_RUN_AS_NODE`, `NODE_OPTIONS` and `--inspect` are disabled; cookies are encrypted on disk; the app loads only from its asar archive, with integrity checking.
-- **Network.**
-  - The app connects to the pages you visit, to DuckDuckGo (and OpenStreetMap) for AI tabs and, only if you switch them on, for search suggestions as you type on a new tab (sent without cookies), and to Hugging Face for model downloads you start.
-  - There is no telemetry.
-  - Ad-block lists, llama.cpp and whisper.cpp binaries ship with the app.
-  - Spellcheck is macOS-only, so no dictionaries are downloaded.
-
-## Developer tools
-
-| Command                                                       | What it does                                                            |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `npm run typecheck && npm run lint`                           | Strict TypeScript and ESLint                                            |
-| `npx electron out/main/index.js --self-test=/path/model.gguf` | Checks the inference stack: backend, streaming, grammar JSON, tokenizer |
-| `npx electron out/main/index.js --screenshots=<dir>`          | Walks through the main UI states and saves PNGs (dev builds only)       |
-| `AB_MODEL_PATH=<gguf>`                                        | Uses this GGUF for all text roles (scripted runs, dev builds only)      |
-| `AB_USER_DATA=<dir>`                                          | Uses a separate profile directory (dev builds only)                     |
-| `npm run update-filters`                                      | Refreshes the bundled ad-block lists                                    |
-
-## Build & package
-
-```bash
-npm run build            # typecheck + bundle (out/)
-npm run package          # installers for the current OS → dist/
-npm run package:mac      # .dmg   (also :win → NSIS .exe, :linux → AppImage + .deb)
-```
-
-- `electron-builder.yml` unpacks `node-llama-cpp`, `@node-llama-cpp/*`, `@fugood/*` (whisper.cpp) and `better-sqlite3` from the asar archive. It also ships `resources/filters` as `extraResources`.
-- Build each OS's installer on that OS, so the matching native prebuilds are included.
-- The macOS entitlements include microphone input.
-- Local unsigned builds: `CSC_IDENTITY_AUTO_DISCOVERY=false npm run package:mac`.
-
-## Troubleshooting
-
-| Problem                                | Fix                                                                                                       |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `Electron failed to install correctly` | Run `node node_modules/electron/install.js`.                                                              |
-| "No local model yet"                   | **Settings → Models**: download or import a model and assign it to a role.                                |
-| "No speech model installed"            | **Settings → Models → Speech to text**: download Whisper.                                                 |
-| Mic does nothing / access is off       | macOS: **System Settings → Privacy & Security → Microphone**, allow Agentic Browser (or Electron in dev). |
-| "Not enough memory"                    | Use **Use smaller context**, or pick a smaller model. Close other heavy apps.                             |
-| "Model file is damaged"                | **Settings → Models → Delete**, then download again.                                                      |
-| "The local model stopped"              | The worker crashed (often out of memory). It restarts on the next request.                                |
-| Slow generation                        | If the footer says **CPU**, update GPU drivers or set GPU acceleration to Automatic.                      |
-| Search shows "No results found"        | DuckDuckGo didn't load. Check the connection and try again.                                               |
-| A site looks broken                    | Try turning off ad blocking in **Settings → Privacy**.                                                    |
-
-## License & attribution
-
-- The app code is MIT.
-- **Built with Llama.** Llama 3.2 and Llama 3.1 are licensed under the Llama Community License, Copyright © Meta Platforms, Inc. Models are downloaded by the user after accepting the license, and are not redistributed with the app.
-- Qwen3 models are Apache-2.0 (Alibaba Cloud). Whisper models are MIT (OpenAI), in whisper.cpp's GGML format. nomic-embed-text is Apache-2.0.
-- EasyList and EasyPrivacy are dual-licensed GPLv3 / CC BY-SA 3.0. uBlock Origin's filter lists and resources are GPLv3. Peter Lowe's list is free for this use. The Ghostery adblocker is MPL-2.0.
+MIT. Model weights are downloaded separately and keep their own licenses (Llama community license,
+Apache-2.0, MIT), shown before download.

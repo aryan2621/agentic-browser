@@ -2,7 +2,7 @@
   "name": "agentic-browser",
   "productName": "Agentic Browser",
   "version": "0.1.0",
-  "description": "A desktop browser with an embedded local Llama assistant (summaries, chat, search).",
+  "description": "A web browser whose AI never leaves your computer.",
   "main": "./out/main/index.js",
   "author": "Agentic Browser",
   "license": "MIT",
