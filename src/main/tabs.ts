@@ -1048,7 +1048,8 @@ export class TabManager extends EventEmitter<TabManagerEvents> {
 const PAGE_TITLES: Record<LibraryPage, string> = {
   history: 'History',
   bookmarks: 'Bookmarks',
-  downloads: 'Downloads'
+  downloads: 'Downloads',
+  settings: 'Settings'
 }
 
 function hostOf(url: string): string {

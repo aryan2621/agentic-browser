@@ -36,7 +36,7 @@ export const INVOKE_SCHEMAS = {
   'tabs:close': z.object({ tabId }),
   'tabs:activate': z.object({ tabId }),
   'tabs:open-page': z.object({
-    page: z.enum(['history', 'bookmarks', 'downloads']),
+    page: z.enum(['history', 'bookmarks', 'downloads', 'settings']),
     tabId: tabId.optional()
   }),
   'tabs:navigate': z.object({ tabId, input: z.string().max(8192) }),

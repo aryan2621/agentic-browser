@@ -11,7 +11,6 @@ import {
   IconReload,
   IconHistory,
   IconMore,
-  IconSettings,
   IconStar,
   IconSidebar,
   IconSparkle,
@@ -25,7 +24,6 @@ interface Props {
   focusSignal: number
   panelOpen: boolean
   onTogglePanel: () => void
-  onOpenSettings: () => void
   status: LlmStatus | null
   /** Address suggestions are open over the page area (the page view must hide). */
   onCover: (covered: boolean) => void
@@ -80,7 +78,6 @@ export function AddressBar({
   focusSignal,
   panelOpen,
   onTogglePanel,
-  onOpenSettings,
   status,
   onCover,
   downloads,
@@ -394,9 +391,6 @@ export function AddressBar({
         onClick={onOpenLibrary}
       >
         <IconHistory />
-      </button>
-      <button className="icon-btn" aria-label="Settings" title="Settings" onClick={onOpenSettings}>
-        <IconSettings />
       </button>
       <button
         className="icon-btn"

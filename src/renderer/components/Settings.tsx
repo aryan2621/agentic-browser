@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CONTEXT_SIZE_MAX, CONTEXT_SIZE_MIN } from '@shared/defaults'
 import type {
   SavedPassword,
@@ -11,13 +11,23 @@ import type {
 } from '@shared/types'
 import { SEARCH_ENGINE_NAMES, type SearchEngine } from '@shared/url'
 import { api, openInNewTab, useModels } from '../lib/api'
-import { useBackdropClose } from '../lib/backdrop'
 import { modelFits, useHardware } from '../lib/fit'
 import { formatBytes, gpuLabel } from '../lib/format'
 import { SEARCH_ANSWER_MODES } from '@shared/searchModes'
 import { SPEECH_LANGUAGES } from '@shared/speechLanguages'
 import { Dropdown } from './Dropdown'
-import { IconClose } from './Icons'
+import {
+  IconBolt,
+  IconHistory,
+  IconInfo,
+  IconLock,
+  IconRobot,
+  IconSearch,
+  IconSettings,
+  IconShield,
+  IconSidebar,
+  IconSparkle
+} from './Icons'
 import { LICENSES } from './licenses'
 import { ModelActions, ModelProgress } from './ModelList'
 
@@ -175,17 +185,32 @@ function BrowsingDataSettings() {
 
 /** Browser settings first (pages, tabs, privacy), then the app's own (AI, models). */
 const SECTIONS = [
-  { id: 'general', label: 'General', group: 'Browser settings' },
-  { id: 'library', label: 'Bookmarks & history', group: 'Browser settings' },
-  { id: 'passwords', label: 'Passwords', group: 'Browser settings' },
-  { id: 'windows', label: 'Windows & incognito', group: 'Browser settings' },
-  { id: 'privacy', label: 'Privacy & security', group: 'Browser settings' },
-  { id: 'assistant', label: 'AI & language', group: 'Application settings' },
-  { id: 'search', label: 'AI search', group: 'Application settings' },
-  { id: 'models', label: 'Models', group: 'Application settings' },
-  { id: 'performance', label: 'Performance', group: 'Application settings' },
-  { id: 'about', label: 'About', group: 'Application settings' }
+  { id: 'general', label: 'General', group: 'Browser settings', icon: IconSettings },
+  { id: 'library', label: 'Bookmarks & history', group: 'Browser settings', icon: IconHistory },
+  { id: 'passwords', label: 'Passwords', group: 'Browser settings', icon: IconLock },
+  { id: 'windows', label: 'Windows & incognito', group: 'Browser settings', icon: IconSidebar },
+  { id: 'privacy', label: 'Privacy & security', group: 'Browser settings', icon: IconShield },
+  { id: 'assistant', label: 'AI & language', group: 'Application settings', icon: IconSparkle },
+  { id: 'search', label: 'AI search', group: 'Application settings', icon: IconSearch },
+  { id: 'models', label: 'Models', group: 'Application settings', icon: IconRobot },
+  { id: 'performance', label: 'Performance', group: 'Application settings', icon: IconBolt },
+  { id: 'about', label: 'About', group: 'Application settings', icon: IconInfo }
 ] as const
+
+/** Extra words the settings search matches per section (besides its label). */
+const KEYWORDS: Record<string, string> = {
+  general: 'theme dark light startup restore search engine google duckduckgo bing brave',
+  library: 'bookmarks bar history downloads ai history index',
+  passwords: 'passwords sign in login keychain saved',
+  windows: 'window incognito private new window',
+  privacy:
+    'ad block ads trackers suggestions permissions camera microphone location clear browsing data cookies',
+  assistant: 'language summary chat voice speech microphone embeddings tour',
+  search: 'answer style quick detailed compare sources',
+  models: 'download model llama qwen whisper embeddings import license',
+  performance: 'context gpu memory unload speed restart engine',
+  about: 'version license credits'
+}
 
 type SectionId = (typeof SECTIONS)[number]['id']
 
@@ -194,7 +219,8 @@ interface Props {
   updateSettings: (patch: Partial<SettingsT>) => Promise<void>
   status: LlmStatus | null
   initialSection: string
-  onClose: () => void
+  /** Changes when Settings is opened again (e.g. at another section) while already open. */
+  openSignal: number
 }
 
 function NumberField({
@@ -285,7 +311,7 @@ function RoleSelect({
   )
 }
 
-export function Settings({ settings, updateSettings, status, initialSection, onClose }: Props) {
+export function Settings({ settings, updateSettings, status, initialSection, openSignal }: Props) {
   const [section, setSection] = useState<SectionId>(
     (SECTIONS.find((s) => s.id === initialSection)?.id ?? 'general') as SectionId
   )
@@ -300,11 +326,20 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
     modelId: string
     license: LicenseId
   } | null>(null)
-  const closeRef = useRef<HTMLButtonElement>(null)
+  const [query, setQuery] = useState('')
 
+  // Opening Settings at a section (e.g. ⋮ → Passwords) while the page is already open.
   useEffect(() => {
-    closeRef.current?.focus()
-  }, [])
+    const id = SECTIONS.find((x) => x.id === initialSection)?.id
+    if (id) setSection(id)
+    setQuery('')
+  }, [initialSection, openSignal])
+
+  const q = query.trim().toLowerCase()
+  const shown = SECTIONS.filter(
+    (x) => !q || x.label.toLowerCase().includes(q) || (KEYWORDS[x.id] ?? '').includes(q)
+  )
+  const current = q && !shown.some((x) => x.id === section) ? (shown[0]?.id ?? section) : section
   useEffect(() => {
     if (section === 'models') void api.invoke('models:disk').then(setDisk)
   }, [section, models])
@@ -334,45 +369,52 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
     }
   }
 
-  const backdrop = useBackdropClose(onClose)
-
   return (
-    <div
-      className="overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="settings-title"
-      onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      {...backdrop}
-    >
-      <div className="settings">
-        <header className="settings-header">
-          <h1 id="settings-title">Settings</h1>
-          <button ref={closeRef} className="icon-btn" aria-label="Close settings" onClick={onClose}>
-            <IconClose />
-          </button>
-        </header>
-        <div className="settings-body">
-          <nav className="settings-nav" aria-label="Settings sections">
-            {SECTIONS.map((s, i) => (
-              <div key={s.id} className="settings-nav-item">
-                {SECTIONS[i - 1]?.group !== s.group && (
-                  <span className="settings-nav-group">{s.group}</span>
+    <div className="settings-page">
+      <aside className="settings-side">
+        <h1 className="settings-title">
+          <IconSettings /> Settings
+        </h1>
+        <nav className="settings-nav" aria-label="Settings sections">
+          {shown.map((x, i) => {
+            const Icon = x.icon
+            return (
+              <div key={x.id} className="settings-nav-item">
+                {shown[i - 1]?.group !== x.group && (
+                  <span className="settings-nav-group">{x.group}</span>
                 )}
                 <button
-                  className={section === s.id ? 'active' : ''}
-                  aria-current={section === s.id ? 'page' : undefined}
-                  onClick={() => setSection(s.id)}
+                  className={current === x.id ? 'active' : ''}
+                  aria-current={current === x.id ? 'page' : undefined}
+                  onClick={() => {
+                    setSection(x.id)
+                    setQuery('')
+                  }}
                 >
-                  {s.label}
+                  <Icon /> {x.label}
                 </button>
               </div>
-            ))}
-          </nav>
-          <div className="settings-content">
-            {section === 'general' && (
-              <>
-                <h2>General</h2>
+            )
+          })}
+          {shown.length === 0 && <p className="hint">No settings match.</p>}
+        </nav>
+      </aside>
+      <main className="settings-main">
+        <div className="settings-search">
+          <IconSearch />
+          <input
+            type="search"
+            aria-label="Search settings"
+            placeholder="Search settings"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="settings-content">
+          {current === 'general' && (
+            <>
+              <h2>General</h2>
+              <div className="settings-card">
                 <div className="setting-row">
                   <div className="setting-text">
                     <span className="setting-title">Theme</span>
@@ -432,12 +474,14 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                     }))}
                   />
                 </div>
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'assistant' && (
-              <>
-                <h2>AI & language</h2>
+          {current === 'assistant' && (
+            <>
+              <h2>AI & language</h2>
+              <div className="settings-card">
                 <label className="field">
                   <span className="field-label">Summary & chat language</span>
                   <input
@@ -483,12 +527,14 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                 >
                   Show the tour again
                 </button>
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'library' && (
-              <>
-                <h2>Bookmarks & history</h2>
+          {current === 'library' && (
+            <>
+              <h2>Bookmarks & history</h2>
+              <div className="settings-card">
                 <label className="checkbox">
                   <input
                     type="checkbox"
@@ -502,10 +548,7 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                     <button
                       key={page}
                       className="btn"
-                      onClick={() => {
-                        onClose()
-                        void api.invoke('tabs:open-page', { page })
-                      }}
+                      onClick={() => void api.invoke('tabs:open-page', { page })}
                     >
                       Open{' '}
                       {page === 'bookmarks'
@@ -532,19 +575,23 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                 >
                   Clear AI history index
                 </button>
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'passwords' && (
-              <>
-                <h2>Passwords</h2>
+          {current === 'passwords' && (
+            <>
+              <h2>Passwords</h2>
+              <div className="settings-card">
                 <PasswordSettings />
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'windows' && (
-              <>
-                <h2>Windows & incognito</h2>
+          {current === 'windows' && (
+            <>
+              <h2>Windows & incognito</h2>
+              <div className="settings-card">
                 <p className="hint">
                   A new window has its own tabs. An incognito window keeps cookies and site data in
                   memory only and deletes them when it closes; it adds nothing to history, saves no
@@ -565,12 +612,14 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                     New incognito window
                   </button>
                 </div>
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'search' && (
-              <>
-                <h2>AI search</h2>
+          {current === 'search' && (
+            <>
+              <h2>AI search</h2>
+              <div className="settings-card">
                 <div className="setting-row">
                   <div className="setting-text">
                     <span className="setting-title">Default result style</span>
@@ -621,12 +670,14 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                     ]}
                   />
                 </div>
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'models' && (
-              <>
-                <h2>Models</h2>
+          {current === 'models' && (
+            <>
+              <h2>Models</h2>
+              <div className="settings-card">
                 <RoleSelect
                   role="fast"
                   label="Summaries, chat & search answers"
@@ -724,12 +775,14 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                     Stored in <code>{disk.dir}</code> · {formatBytes(disk.freeBytes)} free
                   </p>
                 )}
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'performance' && (
-              <>
-                <h2>Performance</h2>
+          {current === 'performance' && (
+            <>
+              <h2>Performance</h2>
+              <div className="settings-card">
                 <NumberField
                   label="Context window (tokens)"
                   value={settings.contextSize}
@@ -802,12 +855,14 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                     Restart AI engine
                   </button>
                 </div>
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'privacy' && (
-              <>
-                <h2>Privacy & security</h2>
+          {current === 'privacy' && (
+            <>
+              <h2>Privacy & security</h2>
+              <div className="settings-card">
                 <p>
                   All AI processing happens on this computer. The app only connects to the sites you
                   visit and, when you ask, to Hugging Face to download models.
@@ -829,12 +884,14 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                   Also suggest searches from DuckDuckGo while typing (sends what you type)
                 </label>
                 <BrowsingDataSettings />
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {section === 'about' && (
-              <>
-                <h2>About</h2>
+          {current === 'about' && (
+            <>
+              <h2>About</h2>
+              <div className="settings-card">
                 <p>
                   <strong>Agentic Browser</strong> — a browser with a local AI assistant.
                 </p>
@@ -857,11 +914,11 @@ export function Settings({ settings, updateSettings, status, initialSection, onC
                   Inference: llama.cpp via node-llama-cpp. Page cleanup: Mozilla Readability,
                   Turndown. PDF text: PDF.js.
                 </p>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }

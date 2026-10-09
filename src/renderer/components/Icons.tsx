@@ -194,3 +194,19 @@ export const IconMore = () => (
     <circle cx="12" cy="19" r="1.2" fill="currentColor" />
   </Svg>
 )
+export const IconShield = () => (
+  <Svg>
+    <path d="M12 3l7 3v6c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6z" />
+  </Svg>
+)
+export const IconBolt = () => (
+  <Svg>
+    <path d="M13 3L5 14h6l-1 7 8-11h-6z" />
+  </Svg>
+)
+export const IconInfo = () => (
+  <Svg>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5M12 8h.01" />
+  </Svg>
+)

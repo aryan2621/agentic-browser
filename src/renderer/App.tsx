@@ -55,7 +55,12 @@ export default function App() {
   const [panelOpen, setPanelOpen] = useState(readPanelOpen)
   const [panelTab, setPanelTab] = useState<PanelTab>('summary')
   const [panelWidth, setPanelWidth] = useState<number | null>(null)
-  const [settingsOpen, setSettingsOpen] = useState<false | string>(false)
+  // Settings is a page tab; this is the section it shows (n changes on every open).
+  const [settingsAt, setSettingsAt] = useState({ section: 'general', n: 0 })
+  const setSettingsOpen = useCallback((section: string) => {
+    setSettingsAt((cur) => ({ section, n: cur.n + 1 }))
+    void api.invoke('tabs:open-page', { page: 'settings' })
+  }, [])
   const [addressFocus, setAddressFocus] = useState(0)
   const [peeking, setPeeking] = useState(false)
   const [chatDraft, setChatDraft] = useState<ChatDraft | null>(null)
@@ -84,7 +89,7 @@ export default function App() {
   const width = panelWidth ?? settings?.sidePanelWidth ?? 380
   const onboarding = settings !== null && !settings.onboardingComplete
   const touring = settings !== null && settings.onboardingComplete && !settings.tourComplete
-  const overlay = (onboarding && !peeking) || touring || settingsOpen !== false || settings === null
+  const overlay = (onboarding && !peeking) || touring || settings === null
 
   // Theme: follow OS unless overridden.
   useEffect(() => {
@@ -282,7 +287,6 @@ export default function App() {
         focusSignal={addressFocus}
         panelOpen={panelOpen}
         onTogglePanel={() => setPanelOpen((o) => !o)}
-        onOpenSettings={() => setSettingsOpen('general')}
         status={status}
         onCover={onCover}
         downloads={downloads}
@@ -320,7 +324,16 @@ export default function App() {
             onOpenSettings={(section) => setSettingsOpen(section)}
           />
         ))}
-      {activeTab && libraryPage && (
+      {settings && libraryPage === 'settings' && (
+        <Settings
+          settings={settings}
+          updateSettings={updateSettings}
+          status={status}
+          initialSection={settingsAt.section}
+          openSignal={settingsAt.n}
+        />
+      )}
+      {activeTab && libraryPage && libraryPage !== 'settings' && (
         <LibraryPage
           tabId={activeTab.id}
           page={libraryPage}
@@ -394,15 +407,6 @@ export default function App() {
         <OnboardingScreen settings={settings} updateSettings={updateSettings} onPeek={setPeeking} />
       )}
       {settings && touring && <Tour onDone={() => void updateSettings({ tourComplete: true })} />}
-      {settings && settingsOpen !== false && (
-        <Settings
-          settings={settings}
-          updateSettings={updateSettings}
-          status={status}
-          initialSection={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
-        />
-      )}
     </div>
   )
 }

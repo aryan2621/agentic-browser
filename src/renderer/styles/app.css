@@ -3094,3 +3094,155 @@ progress {
 .settings-nav-item:first-child .settings-nav-group {
   padding-top: 2px;
 }
+
+/* ---------------------------------------------------------------- settings page (tab) */
+
+.settings-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: var(--bg-sunken);
+}
+
+.settings-side {
+  flex: none;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  overflow: auto;
+}
+
+.settings-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 18px 20px 10px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.settings-title svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+}
+
+.settings-page .settings-nav {
+  width: auto;
+  border-right: 0;
+  padding: 6px 10px 20px;
+}
+
+.settings-page .settings-nav button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.settings-page .settings-nav button svg {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.settings-page .settings-nav button.active svg {
+  color: var(--accent);
+}
+
+.settings-page .settings-nav-group {
+  padding: 14px 12px 6px;
+}
+
+.settings-main {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 0 24px 40px;
+}
+
+.settings-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 14px 0 6px;
+  background: var(--bg-sunken);
+  display: flex;
+  align-items: center;
+}
+
+.settings-search svg {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+}
+
+.settings-search input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px 0 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.settings-search input:focus {
+  border-color: var(--focus);
+}
+
+.settings-page .settings-content {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 10px 0 0;
+  overflow: visible;
+}
+
+.settings-page .settings-content h2 {
+  margin: 18px 0 10px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.settings-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-card > * {
+  margin: 0;
+  padding: 14px 0;
+}
+
+.settings-card > *:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-card > h3 {
+  padding-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 0 !important;
+}
+
+.settings-card > .btn,
+.settings-card > button {
+  align-self: flex-start;
+  margin: 12px 0;
+  padding: 6px 12px;
+}

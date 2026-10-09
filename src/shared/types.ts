@@ -26,7 +26,7 @@ export interface TabInfo {
   page: LibraryPage | null
 }
 
-export type LibraryPage = 'history' | 'bookmarks' | 'downloads'
+export type LibraryPage = 'history' | 'bookmarks' | 'downloads' | 'settings'
 
 export interface FindResult {
   tabId: TabId
