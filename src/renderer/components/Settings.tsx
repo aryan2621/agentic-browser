@@ -197,6 +197,38 @@ const SECTIONS = [
   { id: 'about', label: 'About', group: 'Application settings', icon: IconInfo }
 ] as const
 
+/** One line under each section's title. */
+const DESCRIPTIONS: Record<string, string> = {
+  general: 'Appearance, what opens at launch and the search engine.',
+  library: 'Bookmarks bar, history and downloads, and AI search over your history.',
+  passwords: 'Sign-ins saved with your system keychain.',
+  windows: 'New windows and private incognito windows.',
+  privacy: 'Ad blocking, suggestions, site permissions and browsing data.',
+  assistant: 'Answer language, voice input and how long pages are read.',
+  search: 'How AI tabs write answers and how many sources they read.',
+  models: 'Local models on this computer: download, import and assign.',
+  performance: 'Context size, GPU use and memory.',
+  about: 'Version, credits and licenses.'
+}
+
+/** A section's title with its icon and a short description. */
+function SectionHeader({ id }: { id: string }) {
+  const def = SECTIONS.find((x) => x.id === id)
+  if (!def) return null
+  const Icon = def.icon
+  return (
+    <header className="settings-section-header">
+      <span className="settings-section-icon" aria-hidden="true">
+        <Icon />
+      </span>
+      <div>
+        <h2>{def.label}</h2>
+        <p className="hint">{DESCRIPTIONS[id]}</p>
+      </div>
+    </header>
+  )
+}
+
 /** Extra words the settings search matches per section (besides its label). */
 const KEYWORDS: Record<string, string> = {
   general: 'theme dark light startup restore search engine google duckduckgo bing brave',
@@ -413,7 +445,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
         <div className="settings-content">
           {current === 'general' && (
             <>
-              <h2>General</h2>
+              <SectionHeader id="general" />
               <div className="settings-card">
                 <div className="setting-row">
                   <div className="setting-text">
@@ -480,7 +512,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'assistant' && (
             <>
-              <h2>AI & language</h2>
+              <SectionHeader id="assistant" />
               <div className="settings-card">
                 <label className="field">
                   <span className="field-label">Summary & chat language</span>
@@ -533,7 +565,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'library' && (
             <>
-              <h2>Bookmarks & history</h2>
+              <SectionHeader id="library" />
               <div className="settings-card">
                 <label className="checkbox">
                   <input
@@ -581,7 +613,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'passwords' && (
             <>
-              <h2>Passwords</h2>
+              <SectionHeader id="passwords" />
               <div className="settings-card">
                 <PasswordSettings />
               </div>
@@ -590,7 +622,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'windows' && (
             <>
-              <h2>Windows & incognito</h2>
+              <SectionHeader id="windows" />
               <div className="settings-card">
                 <p className="hint">
                   A new window has its own tabs. An incognito window keeps cookies and site data in
@@ -618,7 +650,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'search' && (
             <>
-              <h2>AI search</h2>
+              <SectionHeader id="search" />
               <div className="settings-card">
                 <div className="setting-row">
                   <div className="setting-text">
@@ -676,7 +708,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'models' && (
             <>
-              <h2>Models</h2>
+              <SectionHeader id="models" />
               <div className="settings-card">
                 <RoleSelect
                   role="fast"
@@ -781,7 +813,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'performance' && (
             <>
-              <h2>Performance</h2>
+              <SectionHeader id="performance" />
               <div className="settings-card">
                 <NumberField
                   label="Context window (tokens)"
@@ -861,7 +893,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'privacy' && (
             <>
-              <h2>Privacy & security</h2>
+              <SectionHeader id="privacy" />
               <div className="settings-card">
                 <p>
                   All AI processing happens on this computer. The app only connects to the sites you
@@ -890,7 +922,7 @@ export function Settings({ settings, updateSettings, status, initialSection, ope
 
           {current === 'about' && (
             <>
-              <h2>About</h2>
+              <SectionHeader id="about" />
               <div className="settings-card">
                 <p>
                   <strong>Agentic Browser</strong> — a browser with a local AI assistant.

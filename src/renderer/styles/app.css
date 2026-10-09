@@ -3101,16 +3101,17 @@ progress {
   flex: 1;
   min-height: 0;
   display: flex;
-  background: var(--bg-sunken);
+  background: var(--bg);
 }
 
 .settings-side {
   flex: none;
-  width: 260px;
+  width: 264px;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
-  border-right: 1px solid var(--border);
+  /* One warm tint from top to bottom, whatever the length of the list. */
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg));
+  border-right: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
   overflow: auto;
 }
 
@@ -3130,10 +3131,17 @@ progress {
   color: var(--accent);
 }
 
+.settings-title {
+  padding-bottom: 14px;
+}
+
 .settings-page .settings-nav {
   width: auto;
+  flex: 1;
   border-right: 0;
-  padding: 6px 10px 20px;
+  background: transparent;
+  padding: 6px 12px 20px;
+  gap: 3px;
 }
 
 .settings-page .settings-nav button {
@@ -3141,21 +3149,46 @@ progress {
   align-items: center;
   gap: 12px;
   padding: 9px 12px;
+  border-radius: 10px;
   font-size: 14px;
   color: var(--text);
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .settings-page .settings-nav button svg {
   flex: none;
-  color: var(--text-muted);
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.settings-page .settings-nav button:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* The open section: a solid accent pill. */
+.settings-page .settings-nav button.active {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .settings-page .settings-nav button.active svg {
-  color: var(--accent);
+  color: var(--accent-text);
+  opacity: 1;
 }
 
 .settings-page .settings-nav-group {
-  padding: 14px 12px 6px;
+  padding: 16px 12px 6px;
+  color: color-mix(in srgb, var(--accent) 75%, var(--text));
+}
+
+.settings-page .settings-nav-item:first-child .settings-nav-group {
+  padding-top: 4px;
 }
 
 .settings-main {
@@ -3172,7 +3205,7 @@ progress {
   max-width: 780px;
   margin: 0 auto;
   padding: 14px 0 6px;
-  background: var(--bg-sunken);
+  background: var(--bg);
   display: flex;
   align-items: center;
 }
@@ -3226,8 +3259,8 @@ progress {
   padding: 14px 0;
 }
 
-.settings-card > *:not(:last-child) {
-  border-bottom: 1px solid var(--border);
+.settings-card > * + * {
+  border-top: 1px solid var(--border);
 }
 
 .settings-card > h3 {
@@ -3237,7 +3270,10 @@ progress {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  border-bottom: 0 !important;
+}
+
+.settings-card > h3 + * {
+  border-top: 0;
 }
 
 .settings-card > .btn,
@@ -3245,4 +3281,153 @@ progress {
   align-self: flex-start;
   margin: 12px 0;
   padding: 6px 12px;
+}
+
+/* Inside a settings card the card draws the dividers between rows; rows keep no bottom line. */
+.settings-card .setting-row {
+  border-bottom: 0;
+}
+
+/* ---------------------------------------------------------------- settings cards, refined */
+
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 14px;
+}
+
+.settings-section-header h2 {
+  margin: 0 !important;
+  font-size: 18px;
+}
+
+.settings-section-header p {
+  margin: 2px 0 0;
+}
+
+.settings-section-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-elev));
+}
+
+.settings-section-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.settings-card {
+  border-radius: 14px;
+  padding: 4px 0;
+  border-color: color-mix(in srgb, var(--text) 9%, transparent);
+  box-shadow:
+    0 1px 2px rgba(20, 20, 19, 0.04),
+    0 4px 14px rgba(20, 20, 19, 0.04);
+  overflow: hidden;
+}
+
+/* Rows span the card's full width so dividers and hover reach the edges. */
+.settings-card > * {
+  padding: 14px 22px;
+}
+
+.settings-card > .setting-row,
+.settings-card > .checkbox {
+  transition: background 0.12s;
+}
+
+.settings-card > .setting-row:hover,
+.settings-card > .checkbox:hover {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.settings-card > .setting-row .setting-title,
+.settings-card > .checkbox {
+  font-size: 14px;
+}
+
+.settings-card > h3 {
+  padding: 18px 22px 6px;
+  color: var(--accent);
+}
+
+.settings-card > p,
+.settings-card > .hint {
+  line-height: 1.5;
+}
+
+/* Checkboxes in cards become switches on the right, text on the left. */
+.settings-card .checkbox {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  cursor: pointer;
+}
+
+.settings-card .checkbox input[type='checkbox'] {
+  appearance: none;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  border-radius: 11px;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 11px 50%, #fff 8px, transparent 8.5px),
+    color-mix(in srgb, var(--text) 22%, transparent);
+  transition: background 0.15s;
+}
+
+.settings-card .checkbox input[type='checkbox']:checked {
+  background: radial-gradient(circle at 27px 50%, #fff 8px, transparent 8.5px), var(--accent);
+}
+
+.settings-card .checkbox input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Text fields: label above, full-width input. */
+.settings-card > .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-card .field .text-input,
+.settings-card .field input {
+  max-width: 420px;
+  height: 36px;
+  border-radius: 9px;
+}
+
+/* Buttons sit in their own row, as pills. */
+.settings-card > .btn,
+.settings-card > button {
+  margin: 12px 22px;
+  padding: 7px 16px;
+  border-radius: 999px;
+}
+
+.settings-card > .row {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.settings-card > .row .btn {
+  border-radius: 999px;
+  padding: 7px 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .settings-card {
+    box-shadow: none;
+  }
 }
