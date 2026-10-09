@@ -34,6 +34,9 @@ electronFuses:
   enableCookieEncryption: true
   enableEmbeddedAsarIntegrityValidation: true
   onlyLoadAppFromAsar: true
+  # Flipping fuses edits the binary and breaks its signature; on Apple Silicon an unsigned or
+  # invalid binary is killed at launch. Re-sign ad hoc (real signing replaces this later).
+  resetAdHocDarwinSignature: true
 mac:
   category: public.app-category.productivity
   target:
