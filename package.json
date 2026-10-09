@@ -1,6 +1,7 @@
 {
   "name": "agentic-browser",
   "productName": "Agentic Browser",
+  "desktopName": "agentic-browser.desktop",
   "version": "0.1.0",
   "description": "A web browser whose AI never leaves your computer.",
   "main": "./out/main/index.js",

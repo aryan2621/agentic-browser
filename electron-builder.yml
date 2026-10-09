@@ -53,6 +53,10 @@ nsis:
   allowToChangeInstallationDirectory: true
 linux:
   category: Network
+  # Required by .deb packages; the GitHub no-reply address keeps personal email out.
+  maintainer: Rishabh Verma <69208178+aryan2621@users.noreply.github.com>
+  # Lets desktop environments link running windows to the app's .desktop entry.
+  syncDesktopName: true
   target:
     - AppImage
     - deb
