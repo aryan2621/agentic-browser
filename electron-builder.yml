@@ -1,0 +1,58 @@
+appId: dev.agentic.browser
+productName: Agentic Browser
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+  # node-llama-cpp needs its llama/ metadata at runtime; only skip local source builds.
+  - '!**/node_modules/node-llama-cpp/llama/localBuilds/**/*'
+  - '!**/node_modules/node-llama-cpp/llama/llama.cpp/**/*'
+  - '!**/node_modules/node-llama-cpp/templates/**/*'
+# Ad/tracker filter lists bundled with the app (read at startup, never downloaded at runtime).
+extraResources:
+  - from: resources/filters
+    to: filters
+# Native binaries cannot be loaded from inside an asar archive.
+asarUnpack:
+  - node_modules/node-llama-cpp/**
+  - node_modules/@node-llama-cpp/**
+  - node_modules/better-sqlite3/**
+  - node_modules/@fugood/**
+  - node_modules/bindings/**
+  - node_modules/file-uri-to-path/**
+npmRebuild: false
+# Electron fuses, flipped in the packaged binary. RunAsNode stays off: inference and speech use
+# utilityProcess, not ELECTRON_RUN_AS_NODE. The file:// fuse stays at its default because the UI
+# is loaded from out/renderer/index.html.
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableCookieEncryption: true
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+  hardenedRuntime: true
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    NSMicrophoneUsageDescription: Used for voice input, and by websites you allow to use your microphone.
+    NSCameraUsageDescription: Used by websites you allow to use your camera.
+    NSLocationUsageDescription: Used by websites you allow to know your location.
+    NSLocationWhenInUseUsageDescription: Used by websites you allow to know your location.
+win:
+  target:
+    - target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+linux:
+  category: Network
+  target:
+    - AppImage
+    - deb
