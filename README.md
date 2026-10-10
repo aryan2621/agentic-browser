@@ -141,5 +141,7 @@ human" checks loop, the agent only handles simple tasks, and builds aren't code-
 
 ## License
 
-MIT. Model weights are downloaded separately and keep their own licenses (Llama community license,
-Apache-2.0, MIT), shown before download.
+MIT, see [LICENSE](LICENSE). Model weights are downloaded separately and keep their own licenses
+(Llama community license, Apache-2.0, MIT), shown before download. The ad and tracker filter lists
+in `resources/filters/` (EasyList, EasyPrivacy, uBlock Origin, Peter Lowe's list) are third-party
+and keep their own licenses.
